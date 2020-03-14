@@ -99,18 +99,22 @@ cleaned_school = map_to_int(school_vector)
 cleaned_sex = map_to_int(sex_vector)
 cleaned_address = map_to_int(address_vector)
 cleaned_famsize = map_to_int(famsize_vector)
+
 cleaned_pstatus = map_to_int(pstatus_vector)
 cleaned_mjob = map_to_int(mjob_vector)
 cleaned_fjob = map_to_int(fjob_vector)
 cleaned_reason = map_to_int(reason_vector)
+
 cleaned_guardian = map_to_int(guardian_vector)
 cleaned_schoolsup = map_to_int(schoolsup_vector)
 cleaned_famsup = map_to_int(famsup_vector)
 cleaned_paid = map_to_int(paid_vector)
+
 cleaned_activities = map_to_int(activities_vector)
 cleaned_nursery = map_to_int(nursery_vector)
 cleaned_higher = map_to_int(higher_vector)
 cleaned_internet = map_to_int(internet_vector)
+
 cleaned_romantic = map_to_int(romantic_vector)
 # println(cleaned_activities)
 # 2. Extract outcome and features
@@ -129,27 +133,63 @@ for i in 1:size(m)[1] # rows
     end
 end
 
-# 2.2 Extracting features whilst excluding G1 - G3
-features = Matrix{Int64}(undef, size(m)[1], size(m)[2])
+# 2.2 Update the changes to the matrix to the numerical equivalents
 # TODO: Create vectors for the features then concatenate them. Below not functioning as expected
-do_not_extract = Int64[1, 2, 4, 5, 6, 9, 10, 11, 12, 16, 17, 18, 19, 20, 21, 22, 23]
-found_j = false
+
 for i in 1:size(m)[1]
     for j in 1:size(m)[2]
-        # ignore the defined already collected columns
-        if j in do_not_extract
-            global found_j = true
-            continue
-        end
-        if found_j == true
-            features[i,j-1] = m[i,j]
-        else
-            features[i,j] = m[i,j]
+        if j == 1
+            m[i,j] = cleaned_school[i]
+        elseif j == 2
+            m[i,j] = cleaned_sex[i]
+        elseif j == 4
+            m[i,j] = cleaned_address[i]
+        elseif j == 5
+            m[i,j] = cleaned_famsize[i]
+        elseif j == 6
+            m[i,j] = cleaned_pstatus[i]
+        elseif j == 9
+            m[i,j] = cleaned_mjob[i]
+        elseif j == 10
+            m[i,j] = cleaned_fjob[i]
+        elseif j == 11
+            m[i,j] = cleaned_reason[i]
+        elseif j == 12
+            m[i,j] = cleaned_guardian[i]
+        elseif j == 16
+            m[i,j] = cleaned_schoolsup[i]
+        elseif j == 17
+            m[i,j] = cleaned_famsup[i]
+        elseif j == 18
+            m[i,j] = cleaned_paid[i]
+        elseif j == 19
+            m[i,j] = cleaned_activities[i]
+        elseif j == 20
+            m[i,j] = cleaned_nursery[i]
+        elseif j == 21
+            m[i,j] = cleaned_higher[i]
+        elseif j == 22
+            m[i,j] = cleaned_internet[i]
+        elseif j == 23
+            m[i,j] = cleaned_romantic[i]
         end
     end
 end
 
-println(features)
+# Remove G1, G2 and G3 from matrix by writing all except unwanted
+new_matrix = Matrix{Int64}(undef, size(m)[1], size(m)[2]-2)
+for i in 1:size(m)[1]
+    for j in 1:size(m)[2]-2
+        # Merge the outcome value as the last index
+        if j == size(m)[2]-2
+            new_matrix[i,j] = outcome_vector[i]
+            continue
+        end
+        new_matrix[i,j] = m[i,j]
+    end
+end
+
+println(new_matrix)
         
 
 # println(df[:, :sex])

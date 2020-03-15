@@ -1,12 +1,12 @@
 using CSV
 using Statistics
 using DataFrames
+using StatsBase  # For standardization
 
 file_path = "student-mat.csv"
 df = CSV.read(file_path)
 m = convert(Matrix, df)
 
-# 1. Clean the data
 school_vector = Array{String,1}(undef, size(m)[1])
 sex_vector = Array{String,1}(undef, size(m)[1])
 address_vector = Array{String,1}(undef, size(m)[1])
@@ -116,7 +116,7 @@ cleaned_higher = map_to_int(higher_vector)
 cleaned_internet = map_to_int(internet_vector)
 
 cleaned_romantic = map_to_int(romantic_vector)
-# println(cleaned_activities)
+
 # 2. Extract outcome and features
 # 2.1 Create outcome vector
 outcome_vector = Array{Float64, 1}(undef, size(m)[1])
@@ -189,71 +189,17 @@ for i in 1:size(m)[1]
     end
 end
 
-println(new_matrix)
-        
+# Standadize
+# To avoid InexactError: Int64(Int64, -0.3780405275933236) convert matrix to float type
+new_matrix = convert(Array{Float64, 2}, new_matrix)
+m_fit = fit(ZScoreTransform, new_matrix, dims=2)
 
-# println(df[:, :sex])
-# Make sense of data
-# how many rows and the labels to show
-# println(df[:, [:sex,:age]])
-# Symbol[:school, :sex, :age, :address, :famsize, :Pstatus, :Medu, :Fedu, :Mjob, :Fjob, :reason, :guardian, :traveltime, :studytime, :failures, :schoolsup, :famsup, :paid, :activities, :nursery, :higher, :internet, :romantic, :famrel, :freetime, :goout, :Dalc, :Walc, :health, :absences, :G1, :G2, :G3]
-# println(summary(df))
-# println(size(df))
+matrix_standardized = StatsBase.transform(m_fit, new_matrix)
 
-# Data cleaning
+# Split into testing and training
+TEST_PERCENT = 0.8
+# Calculate number of rows to use as test sample
+testing_row_length = trunc(Int64, size(matrix_standardized)[1] * TEST_PERCENT)
+testing_matrix = matrix_standardized[1:testing_row_length]
+training_matrix = matrix_standardized[testing_row_length: size(matrix_standardized)[1]]
 
-# Returns sex array with M mapped to 1 F to 0
-# function clean_sex(cols) # note: cols is an array
-#     # cols is array
-#     temp = fill(0, size(cols))
-#     for i in 1:length(cols)
-#         if cols[i] == "M"
-#             temp[i] = 1
-#         end
-#     end
-#     return temp
-# end
-
-# function clean_guardian(cols) # note: cols is an array
-#     # cols is array
-#     temp = fill(0, size(cols))
-#     for i in 1:length(cols)
-#         if cols[i] == "father"
-#             temp[i] = 1
-#         elseif cols[i] == "mother"
-#             temp[i] = 0
-#         elseif cols[i] == "other"
-#             temp[i] = -1
-#         else
-#             temp[i] = -2
-#         end
-#     end
-#     return temp
-# end
-
-# # let's clean sex
-# sex_df = select(df, :sex)
-# mod_sex = aggregate(sex_df, clean_sex)
-# # integrate sex cols
-# without_sex = select(df, Not(:sex)) # drop column :sex from df
-# a = convert(Matrix, mod_sex)
-# println(length(a))
-# println(a)
-# temp_sex = fill(0, size(1, length(a)))
-# println(temp_sex) # -> [0]
-# for i in 1:length(temp_sex)
-#     temp_sex[i] = a[i]
-# end
-# println(temp_sex) # -> [0]
-# # ERROR: LoadError: DimensionMismatch("length of new column (1) must match the number of rows in data frame (395)")
-# df = insertcols!(without_sex, 2, sex=temp_sex)
-
-# # let's clean guardian
-# # guardian_df = select(df, :guardian)
-# # mod_guardian = aggregate(guardian_df, clean_guardian)
-# # # integrate guardian cols
-# # without_guardian = select(df, Not(:guardian))
-# # df = insertcols!(without_guardian, 12, guardian=mod_guardian)
-# # println(df[:, :sex])
-
-# println(describe(df))
